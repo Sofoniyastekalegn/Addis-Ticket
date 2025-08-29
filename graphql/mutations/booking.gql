@@ -1,0 +1,45 @@
+mutation CreateBooking9$input: bookings_insert_input!) {
+    insert_bookings_one(object: $input) {
+        id
+        user_id
+        showtime_id
+        seats
+        total_amount
+        payment_status
+        booking_status
+        payment_method
+        booking_reference
+        qr_code
+        created_at
+    }
+}
+
+mutation UpdateBookingStatus($id: uuid!, $status: String!, $paymentStatus: String!) {
+    update_bookings_by_pk(
+        pk_columns: { id: $id }
+        set: {
+            booking_status: $status,
+            payment_status: $paymentStatus,
+            updated_at: "now()"
+        }
+    ) {
+        id
+        booking_status
+        payment_status
+        updated_at
+    }
+}
+
+mutation CancelBooking($id: uuid!) {
+    update_bookings_by_pk(
+        pk_columns: { id: $id }
+        _set: {
+            booking_status: "cancelled",
+            updated_at: "now()"
+        }
+    ) {
+        id
+        booking_status
+        updated_at
+    }
+}

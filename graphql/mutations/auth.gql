@@ -1,0 +1,35 @@
+mutation RegisterUser($input: users_insert_input!) {
+    insert_users_one(object: $input) {
+        id 
+        name
+        email
+        phone
+        avatar_url
+        created_at
+    }
+}
+mutation UpdateUserProfile($id: uuid!, $input: users_set_input!) {
+    update_users_by_pk(pk_columns: { id: $id }, _set: $input) {
+        id 
+        name
+        email
+        phone
+        avatar_url
+        updated_at
+    }
+}
+
+mutation AddToFavorites($userId: uuid!, $movieId: uuid!) {
+    insert_user_favorites_one(object: {user_id: $ { user_id: $userId, movie_id: 
+    $movieId}}) {
+        id 
+        user_id
+        movie_id
+        created_at
+    }
+}
+mutation RemoveFromFavorites($userId: uuid!, $movieId: uuid!) {
+  delete_user_favorites(where: { user_id: { _eq: $userId }, movie_id: { _eq: $movieId } }) {
+    affected_rows
+  }
+}
