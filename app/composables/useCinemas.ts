@@ -1,4 +1,25 @@
 import { ref, computed } from 'vue'
+import { useQuery } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
+
+const GET_CINEMAS = gql`
+  query GetCinemas {
+    cinemas {
+      id
+      name
+      address
+      city
+      phone
+      created_at
+      cinema_halls {
+        id
+        name
+        capacity
+        created_at
+      }
+    }
+  }
+`
 
 interface Cinema {
   id: number
@@ -39,8 +60,8 @@ export const useCinemas = () => {
   }
 
   return {
-    cinemas: readonly(cinemas),
-    loading: readonly(loading),
+    cinemas: computed(() => cinemas.value),
+    loading: computed(() => loading.value),
     fetchCinemas
   }
 }
