@@ -1,11 +1,6 @@
 <template>
   <div>
-    <NuxtRouteAnnouncer />
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-    
-    <!-- Auth Modal -->
+    <NuxtPage />
     <AuthModal ref="authModalRef" />
   </div>
 </template>

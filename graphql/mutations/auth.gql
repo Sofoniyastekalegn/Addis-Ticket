@@ -1,35 +1,96 @@
-mutation RegisterUser($input: users_insert_input!) {
-    insert_users_one(object: $input) {
-        id 
+
+
+
+  tickets(where: { user_id: { _eq: $userId } }, order_by: { created_at: desc }) {
+    id
+    user_id
+    schedule_id
+    seat_number
+    price
+    status
+    payment_reference
+    created_at
+    updated_at
+    schedule {
+      id
+      start_time
+      end_time
+      price
+      movie {
+        id
+        title
+        featured_image_url
+      }
+      cinema_hall {
         name
-        email
-        phone
-        avatar_url
-        created_at
+        cinema {
+          name
+          city
+        }
+      }
     }
-}
-mutation UpdateUserProfile($id: uuid!, $input: users_set_input!) {
-    update_users_by_pk(pk_columns: { id: $id }, _set: $input) {
-        id 
-        name
-        email
-        phone
-        avatar_url
-        updated_at
-    }
+  }
 }
 
-mutation AddToFavorites($userId: uuid!, $movieId: uuid!) {
-    insert_user_favorites_one(object: {user_id: $ { user_id: $userId, movie_id: 
-    $movieId}}) {
-        id 
-        user_id
-        movie_id
-        created_at
+query GetUserBookmarks($userId: Int!) {
+  user_bookmarks(where: { user_id: { _eq: $userId } }, order_by: { created_at: desc }) {
+    id
+    user_id
+    schedule_id
+    created_at
+    schedule {
+      id
+      start_time
+      end_time
+      price
+      movie {
+        id
+        title
+        featured_image_url
+      }
+      cinema_hall {
+        name
+        cinema {
+          name
+          city
+        }
+      }
     }
+  }
 }
-mutation RemoveFromFavorites($userId: uuid!, $movieId: uuid!) {
-  delete_user_favorites(where: { user_id: { _eq: $userId }, movie_id: { _eq: $movieId } }) {
-    affected_rows
+
+query GetScheduleById($id: Int!) {
+  schedules_by_pk(id: $id) {
+    id
+    movie_id
+    cinema_hall_id
+    start_time
+    end_time
+    price
+    available_seats
+    created_at
+    updated_at
+    movie {
+      id
+      title
+      description
+      duration
+      featured_image_url
+      rating
+    }
+    cinema_hall {
+      id
+      name
+      capacity
+      cinema {
+        id
+        name
+        address
+        city
+      }
+    }
+    tickets {
+      seat_number
+    }
   }
 }

@@ -1,19 +1,15 @@
 import { defineStore } from 'pinia'
-import { useAuth } from '~/composables/useAuth'
 
 interface User {
-  id: string
-  name: string
+  id: number
   email: string
-  phone?: string
-  avatar?: string
-  favorites: string[]
+  name: string
+  role: string
 }
 
 interface AuthState {
   user: User | null
   token: string | null
-  isAuthenticated: boolean
   loading: boolean
 }
 
@@ -21,79 +17,86 @@ export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
     token: null,
-    isAuthenticated: false,
     loading: false
   }),
 
   getters: {
-    currentUser: (state) => state.user,
-    isLoggedIn: (state) => state.isAuthenticated
+    isAuthenticated: (state) => !!state.token,
+    isAdmin: (state) => state.user?.role === 'admin'
   },
 
   actions: {
-    async login(credentials: { email: string; password: string }) {
-      const { login } = useAuth()
-      const result = await login(credentials)
-      
-      if (result.success) {
-        await this.initializeAuth()
+    async initializeAuth() {
+      // Check for existing token in localStorage
+      if (process.client) {
+        const token = localStorage.getItem('auth-token')
+        if (token) {
+          this.token = token
+          // Verify token and get user info
+          await this.verifyToken()
+        }
       }
-      
-      return result
     },
 
-    async register(userData: { name: string; email: string; password: string; phone?: string }) {
-      const { register } = useAuth()
-      const result = await register(userData)
-      
-      if (result.success) {
-        await this.initializeAuth()
+    async login(email: string, password: string) {
+      this.loading = true
+      try {
+        // This would be replaced with actual API call
+        const response = await $fetch('/api/auth/login', {
+          method: 'POST',
+          body: { email, password }
+        })
+        
+        this.token = response.token
+        this.user = response.user
+        if (process.client) {
+          localStorage.setItem('auth-token', response.token)
+        }
+        
+        return { success: true, user: response.user }
+      } catch (error) {
+        console.error('Login error:', error)
+        return { success: false, error: error.message }
+      } finally {
+        this.loading = false
       }
-      
-      return result
+    },
+
+    async register(email: string, password: string, name: string) {
+      this.loading = true
+      try {
+        const response = await $fetch('/api/auth/register', {
+          method: 'POST',
+          body: { email, password, name }
+        })
+        
+        return { success: true, message: response.message }
+      } catch (error) {
+        console.error('Register error:', error)
+        return { success: false, error: error.message }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async verifyToken() {
+      try {
+        const response = await $fetch('/api/auth/verify', {
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
+        })
+        this.user = response.user
+      } catch (error) {
+        this.logout()
+      }
     },
 
     logout() {
-      const { logout } = useAuth()
-      logout()
-      
       this.user = null
       this.token = null
-      this.isAuthenticated = false
-    },
-
-    async initializeAuth() {
-      const { initializeAuth } = useAuth()
-      await initializeAuth()
-      
       if (process.client) {
-        const token = localStorage.getItem('auth-token')
-        const userData = localStorage.getItem('user')
-        
-        if (token && userData) {
-          this.token = token
-          this.user = JSON.parse(userData)
-          this.isAuthenticated = true
-        }
-      }
-    },
-
-    toggleFavorite(movieId: string) {
-      const { toggleFavorite } = useAuth()
-      
-      if (this.user) {
-        toggleFavorite(movieId)
-        
-        const index = this.user.favorites.indexOf(movieId)
-        if (index > -1) {
-          this.user.favorites.splice(index, 1)
-        } else {
-          this.user.favorites.push(movieId)
-        }
-        
-        if (process.client) {
-          localStorage.setItem('user', JSON.stringify(this.user))
-        }
+        localStorage.removeItem('auth-token')
       }
     }
   }

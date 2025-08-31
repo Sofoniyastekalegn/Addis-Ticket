@@ -1,0 +1,129 @@
+
+
+
+query GetMovies($limit: Int, $offset: Int, $where: movies_bool_exp) {
+  movies(limit: $limit, offset: $offset, where: $where, order_by: { created_at: desc }) {
+    id
+    title
+    description
+    duration
+    director_id
+    featured_image_url
+    trailer_url
+    release_date
+    rating
+    total_ratings
+    created_at
+    updated_at
+    movie_images {
+      id
+      image_url
+      is_featured
+    }
+    movie_genres {
+      genre {
+        id
+        name
+        description
+      }
+    }
+    movie_stars {
+      star {
+        id
+        name
+        bio
+        image_url
+      }
+    }
+  }
+}
+
+query GetMovieById($id: Int!) {
+  movies_by_pk(id: $id) {
+    id
+    title
+    description
+    duration
+    director_id
+    featured_image_url
+    trailer_url
+    release_date
+    rating
+    total_ratings
+    created_at
+    updated_at
+    movie_images {
+      id
+      image_url
+      is_featured
+    }
+    movie_genres {
+      genre {
+        id
+        name
+        description
+      }
+    }
+    movie_stars {
+      star {
+        id
+        name
+        bio
+        image_url
+      }
+    }
+  }
+}
+
+query GetFeaturedMovies {
+  movies(where: { movie_images: { is_featured: { _eq: true } } }, limit: 4) {
+    id
+    title
+    description
+    duration
+    featured_image_url
+    rating
+    total_ratings
+    release_date
+    movie_images(where: { is_featured: { _eq: true } }, limit: 1) {
+      image_url
+    }
+  }
+}
+
+query GetNowShowingMovies {
+  movies(
+    where: { 
+      schedules: { 
+        start_time: { _gte: "now()" } 
+      } 
+    }
+    limit: 10
+  ) {
+    id
+    title
+    description
+    duration
+    featured_image_url
+    rating
+    total_ratings
+    release_date
+    schedules(where: { start_time: { _gte: "now()" } }, limit: 3) {
+      id
+      start_time
+      end_time
+      price
+      available_seats
+      cinema_hall {
+        name
+        cinema {
+          name
+          city
+        }
+      }
+    }
+    movie_images(limit: 1) {
+      image_url
+    }
+  }
+}
